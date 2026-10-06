@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ TIFFIN & VIBES: The Ultimate Classroom Showdown</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.18);
+      --accent-yellow: #facc15;
+      --accent-coral: #fb7185;
+      --accent-green: #34d399;
+      --accent-cyan: #38bdf8;
+      --accent-purple: #c084fc;
+      --accent-orange: #fb923c;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --shadow-glow: 0 0 25px rgba(250, 204, 21, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Fredoka', 'Nunito', system-ui, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient animated background circles */
+    .ambient-glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.35;
+    }
+    .glow-1 { width: 350px; height: 350px; background: #6366f1; top: -50px; left: -50px; }
+    .glow-2 { width: 400px; height: 400px; background: #ec4899; bottom: 0; right: -50px; }
+    .glow-3 { width: 300px; height: 300px; background: #10b981; top: 40%; left: 45%; }
+
+    /* Canvas for confetti */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Main Container */
+    .app-wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header Bar */
+    header {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 12px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-badge {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.5);
+      animation: bounce 2s infinite alternate ease-in-out;
+    }
+    @keyframes bounce {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(-4px) scale(1.05); }
+    }
+    .brand-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #fde047, #f43f5e, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Controls Bar: Mode Switcher & Group Filter */
+    .header-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pill-selector {
+      display: flex;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 4px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .pill-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 24px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pill-btn:hover {
+      color: #fff;
+    }
+    .pill-btn.active {
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);
+    }
+    .pill-btn.day1-active {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+    }
+    .pill-btn.day2-active {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--card-border);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.08);
+    }
+
+    /* Main Navigation Tabs */
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+    .tab-btn.active {
+      background: #facc15;
+      color: #0f172a;
+      border-color: #facc15;
+      box-shadow: var(--shadow-glow);
+    }
+
+    /* Screen Views */
+    .screen-view {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      gap: 16px;
+    }
+    .screen-view.active {
+      display: flex;
+    }
+
+    /* Live Scoreboard Ribbon */
+    .scoreboard-ribbon {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .team-badge-card {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-left: 4px solid #6366f1;
+      transition: transform 0.2s;
+    }
+    .team-badge-card:hover {
+      transform: translateY(-2px);
+    }
+    .team-badge-card.team-1 { border-color: #ef4444; }
+    .team-badge-card.team-2 { border-color: #3b82f6; }
+    .team-badge-card.team-3 { border-color: #10b981; }
+    .team-badge-card.team-4 { border-color: #f59e0b; }
+
+    .team-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .team-emoji {
+      font-size: 22px;
+    }
+    .team-name {
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .team-score {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--accent-yellow);
+    }
+    .score-mod-btns {
+      display: flex;
+      gap: 4px;
+    }
+    .score-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .score-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
+    /* Flashcard Arena */
+    .arena-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+      flex: 1;
+    }
+    @media (max-width: 950px) {
+      .arena-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card-stage-container {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: 480px;
+    }
+
+    /* 3D Flip Card Container */
+    .flip-card-perspective {
+      perspective: 1200px;
+      width: 100%;
+      max-width: 460px;
+      height: 380px;
+      cursor: pointer;
+    }
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .flip-card-inner.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Front of Card */
+    .card-front {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border-color: #38bdf8;
+    }
+    .card-front.theme-day1 {
+      border-color: #34d399;
+      background: linear-gradient(145deg, #064e3b, #0f172a);
+    }
+    .card-front.theme-day2 {
+      border-color: #f472b6;
+      background: linear-gradient(145deg, #4c0519, #0f172a);
+    }
+
+    /* Back of Card */
+    .card-back {
+      background: linear-gradient(145deg, #1e1b4b, #2e1065);
+      border-color: var(--accent-yellow);
+      transform: rotateY(180deg);
+      text-align: left;
+    }
+
+    .card-header-tags {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-tier-pill {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .card-cat-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(250, 204, 21, 0.2);
+      color: var(--accent-yellow);
+    }
+
+    .card-body-visual {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin: auto 0;
+    }
+    .card-big-emoji {
+      font-size: 72px;
+      filter: drop-shadow(0 6px 15px rgba(0,0,0,0.5));
+      animation: floatEmoji 3s ease-in-out infinite;
+    }
+    @keyframes floatEmoji {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .card-title {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .card-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .card-footer-tap-hint {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    /* Back Content Formatting */
+    .back-power-box {
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 12px;
+      margin: 8px 0;
+      border-left: 4px solid var(--accent-yellow);
+    }
+    .power-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--accent-yellow);
+      margin-bottom: 4px;
+    }
+    .power-desc {
+      font-size: 13px;
+      line-height: 1.4;
+      color: #f1f5f9;
+    }
+    .back-challenge-box {
+      background: rgba(56, 189, 248, 0.1);
+      border-radius: 12px;
+      padding: 12px;
+      border-left: 4px solid var(--accent-cyan);
+      margin-top: 6px;
+    }
+    .challenge-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--accent-cyan);
+      margin-bottom: 4px;
+    }
+    .challenge-desc {
+      font-size: 13px;
+      line-height: 1.4;
+      color: #e2e8f0;
+    }
+
+    /* Arena Sidebar: Controls & Actions */
+    .arena-sidebar {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Big Action Buzzers */
+    .buzzer-box {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      text-align: center;
+    }
+    .timer-display {
+      font-size: 42px;
+      font-weight: 900;
+      font-family: monospace;
+      color: var(--accent-yellow);
+      text-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
+      margin: 6px 0;
+    }
+    .timer-controls {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+    .timer-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      transition: background 0.2s;
+    }
+    .timer-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
+    .deck-nav-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .nav-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      border: none;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .nav-btn.primary {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .award-team-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .award-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .award-buttons-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .award-btn {
+      border: none;
+      padding: 8px 4px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      transition: transform 0.15s;
+    }
+    .award-btn:hover { transform: scale(1.05); }
+    .award-btn.t1 { background: #ef4444; }
+    .award-btn.t2 { background: #3b82f6; }
+    .award-btn.t3 { background: #10b981; }
+    .award-btn.t4 { background: #f59e0b; }
+
+    /* Interactive Mini-Game 1: BUILD-A-TIFFIN LAB */
+    .tiffin-lab-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .tiffin-lab-grid { grid-template-columns: 1fr; }
+    }
+
+    .tiffin-tray {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .tiffin-slots-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 600px) {
+      .tiffin-slots-container { grid-template-columns: 1fr; }
+    }
+
+    .tiffin-slot {
+      background: rgba(0, 0, 0, 0.3);
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-height: 140px;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .tiffin-slot.filled {
+      border-style: solid;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--accent-green);
+    }
+    .slot-zone-name {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .slot-item-icon {
+      font-size: 40px;
+      margin-bottom: 4px;
+    }
+    .slot-item-title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .clear-slot-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      border: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .food-pantry-palette {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .food-chips-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .food-chip {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .food-chip:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      border-color: var(--accent-yellow);
+    }
+
+    /* Live Balance Meter */
+    .balance-meter-box {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .meter-bar-track {
+      height: 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+    }
+    .meter-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+      transition: width 0.4s ease;
+      border-radius: 20px;
+    }
+    .meter-score-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .meter-comment {
+      font-size: 13px;
+      color: var(--accent-yellow);
+      font-weight: 700;
+      min-height: 20px;
+    }
+
+    /* Interactive Mini-Game 2: PAUSE-NOTICE-CHOOSE ARENA */
+    .pnc-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .pnc-grid { grid-template-columns: 1fr; }
+    }
+
+    .pnc-scenario-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .dilemma-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent-coral);
+    }
+    .dilemma-text {
+      font-size: 16px;
+      line-height: 1.5;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 16px;
+      border-radius: 12px;
+      border-left: 4px solid var(--accent-coral);
+    }
+
+    .thermometer-dial {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(0,0,0,0.3);
+      padding: 12px 16px;
+      border-radius: 14px;
+    }
+    .thermo-step {
+      flex: 1;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .thermo-step:hover { transform: scale(1.08); }
+    .t-step-1 { background: #38bdf8; color: #0f172a; }
+    .t-step-2 { background: #34d399; color: #0f172a; }
+    .t-step-3 { background: #facc15; color: #0f172a; }
+    .t-step-4 { background: #fb923c; color: #0f172a; }
+    .t-step-5 { background: #ef4444; color: #fff; }
+
+    .pnc-choices-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .pnc-choice-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      text-align: left;
+      color: white;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .pnc-choice-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateX(4px);
+    }
+    .pnc-choice-btn.correct {
+      border-color: var(--accent-green);
+      background: rgba(16, 185, 129, 0.2);
+    }
+    .pnc-choice-btn.unsafe {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .pnc-feedback-box {
+      font-size: 14px;
+      line-height: 1.4;
+      padding: 14px;
+      border-radius: 12px;
+      display: none;
+    }
+
+    /* Interactive Mini-Game 3: ZEN BREATHE & CHILL BUBBLE */
+    .breathe-container {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      min-height: 480px;
+      text-align: center;
+    }
+
+    .zen-bubble {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #38bdf8 0%, #818cf8 60%, #c084fc 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 900;
+      color: #0f172a;
+      box-shadow: 0 0 50px rgba(56, 189, 248, 0.6);
+      transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .zen-bubble.inhale {
+      transform: scale(1.6);
+    }
+    .zen-bubble.exhale {
+      transform: scale(0.9);
+    }
+
+    .zen-status-text {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--accent-cyan);
+    }
+    .zen-count-text {
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+
+    /* Soundboard & SFX bar */
+    .soundboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .sfx-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      color: white;
+      padding: 12px 8px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .sfx-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+    .sfx-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Footer Info */
+    footer {
+      margin-top: auto;
+      text-align: center;
+      padding: 16px 0 8px 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- Background Animated Lights -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="app-wrapper">
+
+    <!-- Header Navigation -->
+    <header>
+      <div class="brand">
+        <div class="logo-badge">⚡</div>
+        <div>
+          <div class="brand-title">TIFFIN & VIBES SHOWDOWN</div>
+          <div class="brand-sub">Youth4Impact High-Energy Classroom Arena</div>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <!-- Day Switcher -->
+        <div class="pill-selector">
+          <button class="pill-btn day1-active active" id="btn-day1" onclick="switchDay(1)">
+            <span>🥗</span> Day 1: Nutrition
+          </button>
+          <button class="pill-btn" id="btn-day2" onclick="switchDay(2)">
+            <span>🧠</span> Day 2: Mental Health
+          </button>
+        </div>
+
+        <!-- Grade Group Switcher -->
+        <div class="pill-selector">
+          <button class="pill-btn active" id="btn-grp1" onclick="switchGroup('g1')">
+            <span>🟡</span> Gr 3–4
+          </button>
+          <button class="pill-btn" id="btn-grp2" onclick="switchGroup('g2')">
+            <span>🔵</span> Gr 5–6
+          </button>
+          <button class="pill-btn" id="btn-grp3" onclick="switchGroup('g3')">
+            <span>🟣</span> Gr 7–8
+          </button>
+        </div>
+
+        <!-- Utility Buttons -->
+        <button class="icon-btn" id="sound-toggle-btn" title="Toggle Sound SFX" onclick="toggleMute()">🔊</button>
+        <button class="icon-btn" title="Party Confetti Cannon" onclick="launchConfetti()">🎉</button>
+      </div>
+    </header>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-arena" onclick="switchTab('arena')">
+        <span>🃏</span> Flashcard Arena
+      </button>
+      <button class="tab-btn" id="tab-lab" onclick="switchTab('lab')">
+        <span id="tab-lab-icon">🍱</span> <span id="tab-lab-title">Build-A-Tiffin Lab</span>
+      </button>
+      <button class="tab-btn" id="tab-zen" onclick="switchTab('zen')">
+        <span>🫁</span> Zen Breathe Bubble
+      </button>
+      <button class="tab-btn" id="tab-soundboard" onclick="switchTab('soundboard')">
+        <span>🥁</span> Game Show Soundboard
+      </button>
+    </div>
+
+    <!-- Live Team Scoreboard Ribbon -->
+    <div class="scoreboard-ribbon">
+      <div class="team-badge-card team-1">
+        <div class="team-meta">
+          <span class="team-emoji">🦁</span>
+          <div>
+            <div class="team-name">Red Lions</div>
+            <div class="team-score" id="score-t1">0 pts</div>
+          </div>
+        </div>
+        <div class="score-mod-btns">
+          <button class="score-btn" onclick="modScore('t1', -10)">-</button>
+          <button class="score-btn" onclick="modScore('t1', 10)">+</button>
+        </div>
+      </div>
+
+      <div class="team-badge-card team-2">
+        <div class="team-meta">
+          <span class="team-emoji">🦅</span>
+          <div>
+            <div class="team-name">Blue Eagles</div>
+            <div class="team-score" id="score-t2">0 pts</div>
+          </div>
+        </div>
+        <div class="score-mod-btns">
+          <button class="score-btn" onclick="modScore('t2', -10)">-</button>
+          <button class="score-btn" onclick="modScore('t2', 10)">+</button>
+        </div>
+      </div>
+
+      <div class="team-badge-card team-3">
+        <div class="team-meta">
+          <span class="team-emoji">🐬</span>
+          <div>
+            <div class="team-name">Green Sharks</div>
+            <div class="team-score" id="score-t3">0 pts</div>
+          </div>
+        </div>
+        <div class="score-mod-btns">
+          <button class="score-btn" onclick="modScore('t3', -10)">-</button>
+          <button class="score-btn" onclick="modScore('t3', 10)">+</button>
+        </div>
+      </div>
+
+      <div class="team-badge-card team-4">
+        <div class="team-meta">
+          <span class="team-emoji">🐯</span>
+          <div>
+            <div class="team-name">Gold Tigers</div>
+            <div class="team-score" id="score-t4">0 pts</div>
+          </div>
+        </div>
+        <div class="score-mod-btns">
+          <button class="score-btn" onclick="modScore('t4', -10)">-</button>
+          <button class="score-btn" onclick="modScore('t4', 10)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN 1: FLASHCARD ARENA ================= -->
+    <main class="screen-view active" id="view-arena">
+      <div class="arena-layout">
+
+        <!-- Card Stage -->
+        <div class="card-stage-container">
+          <div class="flip-card-perspective" onclick="flipActiveCard()">
+            <div class="flip-card-inner" id="active-card-inner">
+
+              <!-- FRONT -->
+              <div class="card-face card-front theme-day1" id="card-front-face">
+                <div class="card-header-tags">
+                  <span class="card-tier-pill" id="card-tier-badge">🟡 GRADES 3–4</span>
+                  <span class="card-cat-pill" id="card-cat-badge">STAPLE FUEL</span>
+                </div>
+                <div class="card-body-visual">
+                  <div class="card-big-emoji" id="card-emoji">🍚</div>
+                  <div class="card-title" id="card-title">Steamed Rice (Chawal)</div>
+                  <div class="card-subtitle" id="card-subtitle">Energy Battery Food</div>
+                </div>
+                <div class="card-footer-tap-hint">
+                  <span>👆 Click to Flip & Reveal Superpower!</span>
+                </div>
+              </div>
+
+              <!-- BACK -->
+              <div class="card-face card-back" id="card-back-face">
+                <div class="card-header-tags">
+                  <span class="card-tier-pill">SECRET REVEAL</span>
+                  <span class="card-cat-pill" id="card-points-badge">+10 PTS</span>
+                </div>
+                
+                <div class="back-power-box">
+                  <div class="power-label" id="back-power-title">⚡ Body Superpower:</div>
+                  <div class="power-desc" id="back-power-desc">Gives long playground fuel to run and think. Pair with dal so it stays steady!</div>
+                </div>
+
+                <div class="back-challenge-box">
+                  <div class="challenge-label" id="back-task-title">🎯 Squad Detective Challenge:</div>
+                  <div class="challenge-desc" id="back-task-desc">Shout out 1 food that turns this into a complete meal!</div>
+                </div>
+
+                <div class="card-footer-tap-hint" style="margin-top:auto;">
+                  <span>🔄 Click to Flip Back</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Control Panel -->
+        <div class="arena-sidebar">
+
+          <!-- Game Buzzer & Timer -->
+          <div class="buzzer-box">
+            <div style="font-size: 12px; color: var(--text-muted); font-weight:800; text-transform:uppercase;">Squad Action Timer</div>
+            <div class="timer-display" id="timer-display">30</div>
+            <div class="timer-controls">
+              <button class="timer-btn" onclick="startTimer(15)">15s</button>
+              <button class="timer-btn" onclick="startTimer(30)">30s</button>
+              <button class="timer-btn" onclick="startTimer(45)">45s</button>
+              <button class="timer-btn" onclick="stopTimer()">⏹ Pause</button>
+            </div>
+          </div>
+
+          <!-- Card Nav Controls -->
+          <div class="deck-nav-btns">
+            <button class="nav-btn" onclick="prevCard()">◀ Prev</button>
+            <button class="nav-btn primary" onclick="nextCard()">Next Card ▶</button>
+          </div>
+
+          <div style="text-align: center; font-size: 13px; color: var(--text-muted); font-weight:700;">
+            Card <span id="card-index-indicator">1</span> of <span id="card-total-indicator">12</span>
+          </div>
+
+          <!-- Award Points to Squad -->
+          <div class="award-team-grid">
+            <div class="award-label">Award +10 Pts to Winner Squad:</div>
+            <div class="award-buttons-row">
+              <button class="award-btn t1" onclick="awardCardTo('t1')"><span>🦁</span> Lions</button>
+              <button class="award-btn t2" onclick="awardCardTo('t2')"><span>🦅</span> Eagles</button>
+              <button class="award-btn t3" onclick="awardCardTo('t3')"><span>🐬</span> Sharks</button>
+              <button class="award-btn t4" onclick="awardCardTo('t4')"><span>🐯</span> Tigers</button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ================= SCREEN 2: MINI-GAME (BUILD-A-TIFFIN / PAUSE-NOTICE-CHOOSE) ================= -->
+    <main class="screen-view" id="view-lab">
+
+      <!-- DAY 1 LAB: BUILD A TIFFIN -->
+      <div id="day1-lab-content" class="tiffin-lab-grid">
+        <div class="tiffin-tray">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 style="font-size: 22px; font-weight: 800; color: var(--accent-yellow);">🍱 The 4-Zone Tiffin Plate</h2>
+              <p style="font-size: 13px; color: var(--text-muted);">Tap items from your pantry to fill all 4 secret nutrient zones!</p>
+            </div>
+            <button class="pill-btn" onclick="resetTiffinPlate()" style="background: rgba(255,255,255,0.1);">🔄 Clear Plate</button>
+          </div>
+
+          <div class="tiffin-slots-container">
+            <div class="tiffin-slot" id="slot-staple">
+              <div class="slot-zone-name">🍚 1. Energy Staple (Carbs)</div>
+              <div class="slot-item-icon" id="icon-slot-staple">❓</div>
+              <div class="slot-item-title" id="title-slot-staple">Empty Slot</div>
+            </div>
+
+            <div class="tiffin-slot" id="slot-protein">
+              <div class="slot-zone-name">💪 2. Growth Muscle (Protein)</div>
+              <div class="slot-item-icon" id="icon-slot-protein">❓</div>
+              <div class="slot-item-title" id="title-slot-protein">Empty Slot</div>
+            </div>
+
+            <div class="tiffin-slot" id="slot-shield">
+              <div class="slot-zone-name">🥕 3. Body Shield (Veggies/Fruit)</div>
+              <div class="slot-item-icon" id="icon-slot-shield">❓</div>
+              <div class="slot-item-title" id="title-slot-shield">Empty Slot</div>
+            </div>
+
+            <div class="tiffin-slot" id="slot-water">
+              <div class="slot-zone-name">💧 4. Brain Coolant (Hydration)</div>
+              <div class="slot-item-icon" id="icon-slot-water">❓</div>
+              <div class="slot-item-title" id="title-slot-water">Empty Slot</div>
+            </div>
+          </div>
+
+          <!-- Live Balance Meter -->
+          <div class="balance-meter-box">
+            <div class="meter-score-text">
+              <span>Tiffin Balance Meter</span>
+              <span id="meter-percent-text">0% Balanced</span>
+            </div>
+            <div class="meter-bar-track">
+              <div class="meter-bar-fill" id="meter-fill"></div>
+            </div>
+            <div class="meter-comment" id="meter-comment">Plate is empty. Add staple fuel to get started!</div>
+          </div>
+        </div>
+
+        <!-- Pantry Items to Tap -->
+        <div class="food-pantry-palette">
+          <div style="font-weight: 800; font-size: 15px; color: var(--accent-cyan);">Tap to Add into Plate:</div>
+          <div class="food-chips-wrapper" id="pantry-chips-container">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY 2 LAB: PAUSE-NOTICE-CHOOSE DILEMMA ARENA -->
+      <div id="day2-lab-content" class="pnc-grid" style="display:none;">
+        <div class="pnc-scenario-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="dilemma-title" id="dilemma-title">Scenario #1: The Playground Dispute</div>
+            <span class="card-tier-pill" id="dilemma-group-tag">Grades 3–4</span>
+          </div>
+
+          <div class="dilemma-text" id="dilemma-text">
+            During recess, another student snatches your basketball and kicks it far away while laughing.
+          </div>
+
+          <!-- Thermometer -->
+          <div>
+            <div style="font-size: 12px; color: var(--text-muted); font-weight:800; margin-bottom: 6px;">
+              🌡️ FEELINGS THERMOMETER (Rate Emotional Heat 1 to 5):
+            </div>
+            <div class="thermometer-dial">
+              <div class="thermo-step t-step-1" onclick="setThermo(1)">1: Calm</div>
+              <div class="thermo-step t-step-2" onclick="setThermo(2)">2: Bothered</div>
+              <div class="thermo-step t-step-3" onclick="setThermo(3)">3: Frustrated</div>
+              <div class="thermo-step t-step-4" onclick="setThermo(4)">4: Angry</div>
+              <div class="thermo-step t-step-5" onclick="setThermo(5)">5: Explosion!</div>
+            </div>
+          </div>
+
+          <!-- Choices -->
+          <div>
+            <div style="font-size: 12px; color: var(--text-muted); font-weight:800; margin-bottom: 8px;">
+              🤔 CHOOSE YOUR MOVE (Pause first!):
+            </div>
+            <div class="pnc-choices-container" id="pnc-choices-box">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <div class="pnc-feedback-box" id="pnc-feedback-box"></div>
+        </div>
+
+        <!-- PNC Scenarios Navigation -->
+        <div class="food-pantry-palette">
+          <div style="font-weight: 800; font-size: 15px; color: var(--accent-purple);">Dilemma Playlist:</div>
+          <div class="food-chips-wrapper" id="dilemma-list-container">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ================= SCREEN 3: ZEN BREATHE BUBBLE ================= -->
+    <main class="screen-view" id="view-zen">
+      <div class="breathe-container">
+        <div>
+          <h2 style="font-size: 26px; font-weight: 800; color: var(--accent-cyan);">🫁 4-Square Box Breathing</h2>
+          <p style="font-size: 14px; color: var(--text-muted);">Calm the amygdala & reset heart rate in 60 seconds.</p>
+        </div>
+
+        <div class="zen-bubble" id="zen-bubble">
+          PAUSE
+        </div>
+
+        <div>
+          <div class="zen-status-text" id="zen-status">Ready to Reset</div>
+          <div class="zen-count-text" id="zen-counter">Hit Start when squad is quiet</div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button class="pill-btn active" id="zen-toggle-btn" onclick="toggleBreathing()">▶ Start 4-Square Breathing</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ================= SCREEN 4: GAME SHOW SOUNDBOARD ================= -->
+    <main class="screen-view" id="view-soundboard">
+      <div class="breathe-container" style="align-items: stretch; text-align: left;">
+        <h2 style="font-size: 22px; font-weight: 800; color: var(--accent-yellow);">🥁 Classroom Game Show Soundboard</h2>
+        <p style="font-size: 13px; color: var(--text-muted);">Tap anytime during games for instant audio feedback!</p>
+
+        <div class="soundboard-grid">
+          <button class="sfx-btn" onclick="sfxDing()"><span>🔔</span> Correct Ding</button>
+          <button class="sfx-btn" onclick="sfxBuzzer()"><span>❌</span> Wrong Buzzer</button>
+          <button class="sfx-btn" onclick="sfxFanfare()"><span>🎺</span> Victory Horn</button>
+          <button class="sfx-btn" onclick="sfxDrumroll()"><span>🥁</span> Drumroll Drama</button>
+          <button class="sfx-btn" onclick="sfxWhistle()"><span>🏁</span> Referee Whistle</button>
+          <button class="sfx-btn" onclick="sfxZenChime()"><span>🧘</span> Zen Bell</button>
+        </div>
+
+        <div style="margin-top: 24px; background: rgba(0,0,0,0.3); padding: 18px; border-radius: 14px;">
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--accent-green); margin-bottom: 8px;">🌟 Facilitator Quick Rules</h3>
+          <ul style="font-size: 13px; color: var(--text-muted); line-height: 1.6; padding-left: 20px;">
+            <li><strong>No food shaming:</strong> Every family brings what is available. The lesson is adding variety and safe water.</li>
+            <li><strong>Validate all feelings:</strong> No emotion is illegal. Anger, jealousy, and fear are real body signals—our power lies in the <em>Pause & Choose</em>.</li>
+            <li><strong>Keep it moving:</strong> If a squad takes >30 seconds, use the drumroll to count them down!</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      ⚡ Youth4Impact Experiential Education Engine • Nutrition & Mental Health Interactive Game System
+    </footer>
+
+  </div>
+
+  <script>
+    /* =====================================================================
+       AUDIO SYNTHESIZER (Web Audio API - Zero External Files)
+    ===================================================================== */
+    let audioCtx = null;
+    let isMuted = false;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      document.getElementById('sound-toggle-btn').innerText = isMuted ? '🔇' : '🔊';
+    }
+
+    function sfxDing() {
+      if (isMuted) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      } catch(e) {}
+    }
+
+    function sfxBuzzer() {
+      if (isMuted) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(130, ctx.currentTime);
+        osc.frequency.setValueAtTime(115, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+      } catch(e) {}
+    }
+
+    function sfxFanfare() {
+      if (isMuted) return;
+      try {
+        const ctx = getAudioContext();
+        const notes = [440, 554, 659, 880];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.08));
+          gain.gain.setValueAtTime(0.25, ctx.currentTime + (idx * 0.08));
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + (idx * 0.08) + 0.3);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + (idx * 0.08));
+          osc.stop(ctx.currentTime + (idx * 0.08) + 0.35);
+        });
+      } catch(e) {}
+    }
+
+    function sfxWhistle() {
+      if (isMuted) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(2400, ctx.currentTime);
+        osc.frequency.setValueAtTime(2800, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      } catch(e) {}
+    }
+
+    function sfxDrumroll() {
+      if (isMuted) return;
+      try {
+        const ctx = getAudioContext();
+        for (let i = 0; i < 8; i++) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(90 + Math.random()*20, ctx.currentTime + (i * 0.06));
+          gain.gain.setValueAtTime(0.2, ctx.currentTime + (i * 0.06));
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + (i * 0.06) + 0.05);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + (i * 0.06));
+          osc.stop(ctx.currentTime + (i * 0.06) + 0.06);
+        }
+      } catch(e) {}
+    }
+
+    function sfxZenChime() {
+      if (isMuted) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(528, ctx.currentTime);
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.5);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 2.5);
+      } catch(e) {}
+    }
+
+    /* =====================================================================
+       CONFETTI SYSTEM
+    ===================================================================== */
+    const canvas = document.getElementById('confetti-canvas');
+    const cCtx = canvas.getContext('2d');
+    let confettiParticles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function launchConfetti() {
+      sfxFanfare();
+      const colors = ['#fde047', '#f43f5e', '#38bdf8', '#34d399', '#c084fc', '#fb923c'];
+      for (let i = 0; i < 70; i++) {
+        confettiParticles.push({
+          x: canvas.width / 2 + (Math.random() - 0.5) * 200,
+          y: canvas.height / 2 + (Math.random() - 0.5) * 100,
+          vx: (Math.random() - 0.5) * 12,
+          vy: Math.random() * -12 - 4,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 10,
+          life: 1
+        });
+      }
+    }
+
+    function updateConfetti() {
+      cCtx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = confettiParticles.length - 1; i >= 0; i--) {
+        const p = confettiParticles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.35; // gravity
+        p.rotation += p.rotationSpeed;
+        p.life -= 0.012;
+
+        cCtx.save();
+        cCtx.translate(p.x, p.y);
+        cCtx.rotate((p.rotation * Math.PI) / 180);
+        cCtx.fillStyle = p.color;
+        cCtx.globalAlpha = Math.max(0, p.life);
+        cCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        cCtx.restore();
+
+        if (p.life <= 0 || p.y > canvas.height + 50) {
+          confettiParticles.splice(i, 1);
+        }
+      }
+      requestAnimationFrame(updateConfetti);
+    }
+    updateConfetti();
+
+    /* =====================================================================
+       GAME DATA: CARDS FOR DAY 1 (NUTRITION) & DAY 2 (MENTAL HEALTH)
+    ===================================================================== */
+    const GAME_DECKS = {
+      day1: {
+        g1: [
+          {
+            title: "Steamed Rice (Chawal)",
+            category: "Staple Fuel",
+            emoji: "🍚",
+            subtitle: "Go-Food Battery",
+            powerTitle: "⚡ Playground Battery:",
+            powerDesc: "Gives your legs fuel to run tag and study without sleeping!",
+            taskTitle: "🎯 Squad Question:",
+            taskDesc: "Name 1 food to pair with rice so the battery lasts until the afternoon bell!",
+            points: 10
+          },
+          {
+            title: "Masoor Dal (Lentils)",
+            category: "Muscle Builder",
+            emoji: "🫘",
+            subtitle: "Grow-Food Repair Kit",
+            powerTitle: "💪 Muscle Repair Kit:",
+            powerDesc: "Full of protein that repairs scraped knees and builds tall bones.",
+            taskTitle: "🎯 Squad Challenge:",
+            taskDesc: "Do 3 flex poses showing strong growing muscles!",
+            points: 10
+          },
+          {
+            title: "Crunchy Carrots",
+            category: "Shield / Glow",
+            emoji: "🥕",
+            subtitle: "Eagle Eye Shield",
+            powerTitle: "🛡️ Eagle Eye Shield:",
+            powerDesc: "Vitamin A keeps eyes sharp for reading blackboards and stops coughs.",
+            taskTitle: "🎯 Squad Challenge:",
+            taskDesc: "What should you ALWAYS do before eating a raw carrot? (Wash with clean water!)",
+            points: 10
+          },
+          {
+            title: "Clean Water Bottle",
+            category: "Hydration",
+            emoji: "💧",
+            subtitle: "Brain Coolant",
+            powerTitle: "🧠 Brain Coolant:",
+            powerDesc: "No sugar, zero chemicals! Stops afternoon headaches and keeps focus 100%.",
+            taskTitle: "🎯 Squad Question:",
+            taskDesc: "Is soda better than water for playing sports? Shout YES or NO!",
+            points: 10
+          },
+          {
+            title: "Potato Crisps / Chips",
+            category: "Sometimes Snack",
+            emoji: "🍟",
+            subtitle: "Party Crunch",
+            powerTitle: "⚠️ Munchy's Trap Check:",
+            powerDesc: "Tastes fun at parties, but has zero protein to rebuild your body.",
+            taskTitle: "🎯 Squad Debate:",
+            taskDesc: "Is this food 'bad' or 'sometimes'? (Answer: SOMETIMES!)",
+            points: 10
+          }
+        ],
+        g2: [
+          {
+            title: "Sprouted Moong Salad",
+            category: "Plant Protein",
+            emoji: "🌱",
+            subtitle: "High-Fiber Stamina",
+            powerTitle: "💪 Sustained Satiety:",
+            powerDesc: "Plant protein + fiber stops hunger during long double-period math classes.",
+            taskTitle: "🔍 Detective Clue:",
+            taskDesc: "Why does adding a squeeze of lemon juice help your body absorb the iron?",
+            points: 10
+          },
+          {
+            title: "Hard-Boiled Egg / Paneer",
+            category: "Complete Protein",
+            emoji: "🥚",
+            subtitle: "Adolescent Growth Spurt",
+            powerTitle: "🧬 Complete Amino Acids:",
+            powerDesc: "Supplies all 9 essential building blocks your body cannot make on its own.",
+            taskTitle: "🎯 Squad Question:",
+            taskDesc: "True or False: Only gym bodybuilders need protein?",
+            points: 10
+          },
+          {
+            title: "Local Seasonal Guava",
+            category: "Shield / Vitamin C",
+            emoji: "🍈",
+            subtitle: "The Desi Superfruit",
+            powerTitle: "🛡️ Immunity Guard:",
+            powerDesc: "Contains 4x more Vitamin C than an imported apple at a fraction of the cost!",
+            taskTitle: "🔍 Detective Clue:",
+            taskDesc: "Why are local seasonal fruits healthier than packaged fruit gummies?",
+            points: 10
+          },
+          {
+            title: "Carbonated Soda Can",
+            category: "Sometimes Food",
+            emoji: "🥤",
+            subtitle: "Free Sugar Spike",
+            powerTitle: "⚠️ Sugar Shockwave:",
+            powerDesc: "Contains 8 to 10 teaspoons of liquid sugar. Spikes energy then crashes it fast.",
+            taskTitle: "🎯 Squad Challenge:",
+            taskDesc: "Name 2 healthy desi drinks that hydrate better without sugar crash! (Chaas, Nimbu Paani)",
+            points: 10
+          }
+        ],
+        g3: [
+          {
+            title: "Methi Paratha (Fenugreek)",
+            category: "Complex Carb + Iron",
+            emoji: "🫓",
+            subtitle: "Low Glycemic Index",
+            powerTitle: "⚡ Sustained Release Fuel:",
+            powerDesc: "Slow digestion curve delivers steady glucose to neurons for 4 hours without insulin spike.",
+            taskTitle: "💡 Senior Analysis:",
+            taskDesc: "Compare this to 2 slices of white bread before an afternoon exam.",
+            points: 10
+          },
+          {
+            title: "Roasted Chana & Gur Chikki",
+            category: "Power Snack Combo",
+            emoji: "🥜",
+            subtitle: "Plant Protein & Healthy Fats",
+            powerTitle: "💰 Zero-Budget Performance:",
+            powerDesc: "₹10 street snack delivering magnesium, zinc, and protein exceeding commercial ₹40 energy bars.",
+            taskTitle: "💡 Senior Analysis:",
+            taskDesc: "How does traditional pocket food defeat marketing hype?",
+            points: 10
+          },
+          {
+            title: "Mock Cereal Nutrition Label",
+            category: "Label Detective",
+            emoji: "🔎",
+            subtitle: "Hidden Sugar Trap",
+            powerTitle: "⚠️ Ingredient Deconstruction:",
+            powerDesc: "14g sugar in a 30g bowl means almost 50% of the morning breakfast is candy sugar in disguise.",
+            taskTitle: "💡 Senior Analysis:",
+            taskDesc: "Where on the packet do brands hide the real ingredients list?",
+            points: 10
+          }
+        ]
+      },
+      day2: {
+        g1: [
+          {
+            title: "Happy & Energized!",
+            category: "Emotion Charades",
+            emoji: "🌟",
+            subtitle: "Bouncing Body Signal",
+            powerTitle: "👀 Body Clues to Act:",
+            powerDesc: "Bouncing on toes, open chest, smiling face. Energy is light and buzzing!",
+            taskTitle: "🎭 Silent Charade:",
+            taskDesc: "One squad member acts this out silently in 15 seconds. Squad guesses!",
+            points: 10
+          },
+          {
+            title: "Angry & Steaming!",
+            category: "Emotion Charades",
+            emoji: "🌋",
+            subtitle: "The Body Alarm Bell",
+            powerTitle: "👀 Body Clues to Act:",
+            powerDesc: "Clenched fists, hot cheeks, tight jaw. Anger is a normal warning light!",
+            taskTitle: "🛑 The Golden Rule:",
+            taskDesc: "Is feeling angry okay? (YES!). Is hitting or breaking things okay? (NO!).",
+            points: 10
+          },
+          {
+            title: "Sad / Left Out",
+            category: "Emotion Charades",
+            emoji: "🌧️",
+            subtitle: "The Quiet Raincloud",
+            powerTitle: "👀 Body Clues to Act:",
+            powerDesc: "Looking down, slow heavy feet, quiet voice.",
+            taskTitle: "🤝 Empathy Squad Check:",
+            taskDesc: "What is 1 kind sentence you can say to someone sitting alone at lunch?",
+            points: 10
+          },
+          {
+            title: "The Snapped Crayon",
+            category: "Pause-Notice-Choose",
+            emoji: "🖍️",
+            subtitle: "Accident Reaction",
+            powerTitle: "🛑 1-Second Pause:",
+            powerDesc: "Take 1 big elephant breath before shouting.",
+            taskTitle: "🤔 Safe Choice:",
+            taskDesc: "A friend broke your green crayon by accident. What is the big brain move?",
+            points: 10
+          }
+        ],
+        g2: [
+          {
+            title: "Embarrassed / Awkward",
+            category: "Nuanced Emotion",
+            emoji: "😳",
+            subtitle: "Hot Cheeks & Fidgeting",
+            powerTitle: "👀 Body Clues to Act:",
+            powerDesc: "Flushing face, nervous giggling, looking around to see who noticed.",
+            taskTitle: "💡 Brain Check:",
+            taskDesc: "Why does embarrassment feel like everyone is staring with a spotlight?",
+            points: 10
+          },
+          {
+            title: "Overwhelmed / Swamped",
+            category: "Nuanced Emotion",
+            emoji: "🌊",
+            subtitle: "Circuit Overload",
+            powerTitle: "👀 Body Clues to Act:",
+            powerDesc: "Holding temples, rapid sighing, brain freeze when facing 3 assignments.",
+            taskTitle: "🧰 Coping Tool Match:",
+            taskDesc: "Which tool works best? (Chunking 1 giant task into three 5-minute pieces!)",
+            points: 10
+          },
+          {
+            title: "The Unfair Mark",
+            category: "Pause-Notice-Choose",
+            emoji: "📝",
+            subtitle: "Classroom Dispute",
+            powerTitle: "🛑 Emotional Temperature:",
+            powerDesc: "Thermometer hits Level 4! Heart races with unfairness.",
+            taskTitle: "🤔 Safe Choice:",
+            taskDesc: "Should you crumple your paper or ask the teacher calmly during break to review it?",
+            points: 10
+          }
+        ],
+        g3: [
+          {
+            title: "Jealous / Insecure",
+            category: "Complex Social Emotion",
+            emoji: "🪞",
+            subtitle: "The Comparison Trap",
+            powerTitle: "👀 Body Clues to Act:",
+            powerDesc: "Crossed arms, tight forced smile, looking from corner of eyes.",
+            taskTitle: "💡 Teen Insight:",
+            taskDesc: "Jealousy is just a compass pointing to what we want for ourselves. How do we decode it?",
+            points: 10
+          },
+          {
+            title: "Anxious Perfectionism",
+            category: "Complex Social Emotion",
+            emoji: "⏱️",
+            subtitle: "The Pressure Cooker",
+            powerTitle: "👀 Body Clues to Act:",
+            powerDesc: "Erasing clean sheets, shallow breathing, racing heartbeat before test.",
+            taskTitle: "🧰 Coping Tool Match:",
+            taskDesc: "Use the 4-7-8 breathing reset to deactivate adrenaline.",
+            points: 10
+          },
+          {
+            title: "The Group Chat Drama",
+            category: "Pause-Notice-Choose",
+            emoji: "📱",
+            subtitle: "Cyber Boundary",
+            powerTitle: "🛑 The 2-Minute Screen Step-Back:",
+            powerDesc: "Never reply while hands are shaking with anger.",
+            taskTitle: "🤔 Safe Choice:",
+            taskDesc: "Squad selects the best de-escalation response to a mean meme.",
+            points: 10
+          }
+        ]
+      }
+    };
+
+    /* =====================================================================
+       APP STATE
+    ===================================================================== */
+    let currentDay = 1;
+    let currentGroup = 'g1';
+    let currentCardIndex = 0;
+    let isFlipped = false;
+    let timerInterval = null;
+    let timerSeconds = 30;
+
+    let teamScores = { t1: 0, t2: 0, t3: 0, t4: 0 };
+
+    /* Build-A-Tiffin State */
+    let tiffinPlate = {
+      staple: null,
+      protein: null,
+      shield: null,
+      water: null
+    };
+
+    const PANTRY_ITEMS = [
+      { name: "Steamed Rice", cat: "staple", icon: "🍚" },
+      { name: "Whole-Wheat Roti", cat: "staple", icon: "🫓" },
+      { name: "Poha with Peanuts", cat: "staple", icon: "🥣" },
+      { name: "Masoor Dal", cat: "protein", icon: "🫘" },
+      { name: "Boiled Egg", cat: "protein", icon: "🥚" },
+      { name: "Fresh Paneer", cat: "protein", icon: "🧀" },
+      { name: "Sprouted Moong", cat: "protein", icon: "🌱" },
+      { name: "Crunchy Carrots", cat: "shield", icon: "🥕" },
+      { name: "Seasonal Guava", cat: "shield", icon: "🍈" },
+      { name: "Cucumber Slices", cat: "shield", icon: "🥒" },
+      { name: "Sweet Banana", cat: "shield", icon: "🍌" },
+      { name: "Clean Safe Water", cat: "water", icon: "💧" },
+      { name: "Spiced Chaas", cat: "water", icon: "🥛" },
+      { name: "Fresh Lemon Water", cat: "water", icon: "🍋" }
+    ];
+
+    /* PNC Dilemma Scenarios */
+    const DILEMMAS = [
+      {
+        id: 0,
+        title: "The Recess Ball Snatcher",
+        groupTag: "Grades 3–4",
+        text: "During recess, another kid grabs your football, kicks it across the field, and laughs.",
+        choices: [
+          { text: "Charge and push them down into the mud.", isSafe: false, feedback: "❌ Unsafe! This causes physical injury and gets both of you sent to the principal." },
+          { text: "Take 1 elephant breath and say firmly: 'That's not cool, pass our ball back so we all play.'", isSafe: true, feedback: "✅ Big Brain Move! Firm words without violence show real leadership." },
+          { text: "Tell the sports supervisor or playground teacher if they refuse.", isSafe: true, feedback: "✅ Smart & Safe! Asking a supervisor protects everyone." }
+        ]
+      },
+      {
+        id: 1,
+        title: "The Group Project Slacker",
+        groupTag: "Grades 5–6",
+        text: "One teammate is gaming on their phone while the deadline is in 20 minutes.",
+        choices: [
+          { text: "Tear up their notebook and scream at them.", isSafe: false, feedback: "❌ Unsafe! Destructive anger wastes the remaining 20 minutes." },
+          { text: "Clear division: 'We have 20 mins. If you complete these two bullet points, we are finished. Can you do this now?'", isSafe: true, feedback: "✅ Master move! Gives a clear, realistic mini-task." },
+          { text: "Calmly inform the teacher after submission without insults.", isSafe: true, feedback: "✅ Mature Choice! Honest communication protects team fairness." }
+        ]
+      },
+      {
+        id: 2,
+        title: "The Mean Meme Peer Pressure",
+        groupTag: "Grades 7–8",
+        text: "Friends dare you to post a humiliating meme about a quiet teacher in the class group chat.",
+        choices: [
+          { text: "Post it to avoid being called a coward.", isSafe: false, feedback: "❌ Harmful! Cyberbullying hurts others and carries severe school disciplinary action." },
+          { text: "Use humor to deflect: 'Nah, that meme is low effort. Let's make something actually funny.'", isSafe: true, feedback: "✅ High EQ! Defuses peer pressure without starting a conflict." },
+          { text: "Set a clear boundary: 'I'm not posting that. If you're annoyed, that's fine.'", isSafe: true, feedback: "✅ Supreme Courage! True strength is standing by your ethics." }
+        ]
+      }
+    ];
+
+    let currentDilemmaIdx = 0;
+
+    /* =====================================================================
+       CORE CONTROLLERS & RENDERING
+    ===================================================================== */
+    function switchDay(day) {
+      currentDay = day;
+      document.getElementById('btn-day1').className = 'pill-btn' + (day === 1 ? ' day1-active active' : '');
+      document.getElementById('btn-day2').className = 'pill-btn' + (day === 2 ? ' day2-active active' : '');
+
+      // Update Tab 2 label
+      if (day === 1) {
+        document.getElementById('tab-lab-icon').innerText = '🍱';
+        document.getElementById('tab-lab-title').innerText = 'Build-A-Tiffin Lab';
+        document.getElementById('day1-lab-content').style.display = 'grid';
+        document.getElementById('day2-lab-content').style.display = 'none';
+      } else {
+        document.getElementById('tab-lab-icon').innerText = '🛑';
+        document.getElementById('tab-lab-title').innerText = 'Pause-Notice-Choose Arena';
+        document.getElementById('day1-lab-content').style.display = 'none';
+        document.getElementById('day2-lab-content').style.display = 'grid';
+      }
+
+      currentCardIndex = 0;
+      isFlipped = false;
+      renderActiveCard();
+      sfxDing();
+    }
+
+    function switchGroup(grp) {
+      currentGroup = grp;
+      document.getElementById('btn-grp1').className = 'pill-btn' + (grp === 'g1' ? ' active' : '');
+      document.getElementById('btn-grp2').className = 'pill-btn' + (grp === 'g2' ? ' active' : '');
+      document.getElementById('btn-grp3').className = 'pill-btn' + (grp === 'g3' ? ' active' : '');
+
+      currentCardIndex = 0;
+      isFlipped = false;
+      renderActiveCard();
+      sfxDing();
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.screen-view').forEach(view => view.classList.remove('active'));
+
+      document.getElementById('tab-' + tabId).classList.add('active');
+      document.getElementById('view-' + tabId).classList.add('active');
+      sfxDing();
+    }
+
+    function renderActiveCard() {
+      const deckKey = currentDay === 1 ? 'day1' : 'day2';
+      const deck = GAME_DECKS[deckKey][currentGroup] || GAME_DECKS[deckKey]['g1'];
+
+      if (currentCardIndex >= deck.length) currentCardIndex = 0;
+      if (currentCardIndex < 0) currentCardIndex = deck.length - 1;
+
+      const card = deck[currentCardIndex];
+
+      // Update Front
+      const frontFace = document.getElementById('card-front-face');
+      frontFace.className = 'card-face card-front ' + (currentDay === 1 ? 'theme-day1' : 'theme-day2');
+
+      const tierLabels = { g1: '🟡 GRADES 3–4', g2: '🔵 GRADES 5–6', g3: '🟣 GRADES 7–8' };
+      document.getElementById('card-tier-badge').innerText = tierLabels[currentGroup];
+      document.getElementById('card-cat-badge').innerText = card.category.toUpperCase();
+      document.getElementById('card-emoji').innerText = card.emoji;
+      document.getElementById('card-title').innerText = card.title;
+      document.getElementById('card-subtitle').innerText = card.subtitle;
+
+      // Update Back
+      document.getElementById('card-points-badge').innerText = '+' + card.points + ' PTS';
+      document.getElementById('back-power-title').innerText = card.powerTitle;
+      document.getElementById('back-power-desc').innerText = card.powerDesc;
+      document.getElementById('back-task-title').innerText = card.taskTitle;
+      document.getElementById('back-task-desc').innerText = card.taskDesc;
+
+      // Indicators
+      document.getElementById('card-index-indicator').innerText = currentCardIndex + 1;
+      document.getElementById('card-total-indicator').innerText = deck.length;
+
+      // Reset Flip Animation
+      const cardInner = document.getElementById('active-card-inner');
+      cardInner.classList.remove('flipped');
+      isFlipped = false;
+    }
+
+    function flipActiveCard() {
+      const cardInner = document.getElementById('active-card-inner');
+      isFlipped = !isFlipped;
+      if (isFlipped) {
+        cardInner.classList.add('flipped');
+        sfxDing();
+      } else {
+        cardInner.classList.remove('flipped');
+      }
+    }
+
+    function nextCard() {
+      currentCardIndex++;
+      renderActiveCard();
+      sfxWhistle();
+    }
+
+    function prevCard() {
+      currentCardIndex--;
+      renderActiveCard();
+      sfxWhistle();
+    }
+
+    /* Scoreboard */
+    function modScore(teamId, delta) {
+      teamScores[teamId] = Math.max(0, teamScores[teamId] + delta);
+      document.getElementById('score-' + teamId).innerText = teamScores[teamId] + ' pts';
+      if (delta > 0) sfxDing();
+    }
+
+    function awardCardTo(teamId) {
+      modScore(teamId, 10);
+      launchConfetti();
+    }
+
+    /* Action Timer */
+    function startTimer(seconds) {
+      stopTimer();
+      timerSeconds = seconds;
+      document.getElementById('timer-display').innerText = timerSeconds;
+      sfxDing();
+
+      timerInterval = setInterval(() => {
+        timerSeconds--;
+        document.getElementById('timer-display').innerText = timerSeconds;
+        if (timerSeconds <= 5 && timerSeconds > 0) {
+          sfxWhistle();
+        }
+        if (timerSeconds <= 0) {
+          stopTimer();
+          sfxBuzzer();
+          document.getElementById('timer-display').innerText = "⏰ 00";
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    /* =====================================================================
+       BUILD-A-TIFFIN LAB ENGINE
+    ===================================================================== */
+    function renderPantry() {
+      const container = document.getElementById('pantry-chips-container');
+      container.innerHTML = '';
+      PANTRY_ITEMS.forEach(item => {
+        const chip = document.createElement('div');
+        chip.className = 'food-chip';
+        chip.innerHTML = `<span>${item.icon}</span> <span>${item.name}</span>`;
+        chip.onclick = () => addFoodToTiffin(item);
+        container.appendChild(chip);
+      });
+    }
+
+    function addFoodToTiffin(item) {
+      tiffinPlate[item.cat] = item;
+      sfxDing();
+      updateTiffinUI();
+    }
+
+    function updateTiffinUI() {
+      const zones = ['staple', 'protein', 'shield', 'water'];
+      let filledCount = 0;
+
+      zones.forEach(zone => {
+        const slotEl = document.getElementById('slot-' + zone);
+        const iconEl = document.getElementById('icon-slot-' + zone);
+        const titleEl = document.getElementById('title-slot-' + zone);
+
+        if (tiffinPlate[zone]) {
+          filledCount++;
+          slotEl.classList.add('filled');
+          iconEl.innerText = tiffinPlate[zone].icon;
+          titleEl.innerText = tiffinPlate[zone].name;
+        } else {
+          slotEl.classList.remove('filled');
+          iconEl.innerText = '❓';
+          titleEl.innerText = 'Empty Slot';
+        }
+      });
+
+      const pct = (filledCount / 4) * 100;
+      document.getElementById('meter-fill').style.width = pct + '%';
+      document.getElementById('meter-percent-text').innerText = pct + '% Balanced';
+
+      const commentEl = document.getElementById('meter-comment');
+      if (filledCount === 0) commentEl.innerText = "Plate is empty. Add staple fuel to get started!";
+      else if (filledCount === 1) commentEl.innerText = "Good start! Don't forget muscle building protein!";
+      else if (filledCount === 2) commentEl.innerText = "50% there! Add your shield veggies or fruits!";
+      else if (filledCount === 3) commentEl.innerText = "Almost a master meal! What about clean brain hydration?";
+      else if (filledCount === 4) {
+        commentEl.innerText = "🌟 BOOM! 100% PERFECT TIFFIN! Certified Energy Champion!";
+        launchConfetti();
+      }
+    }
+
+    function resetTiffinPlate() {
+      tiffinPlate = { staple: null, protein: null, shield: null, water: null };
+      updateTiffinUI();
+      sfxBuzzer();
+    }
+
+    /* =====================================================================
+       PAUSE-NOTICE-CHOOSE DILEMMA ARENA ENGINE
+    ===================================================================== */
+    function renderDilemmaList() {
+      const container = document.getElementById('dilemma-list-container');
+      container.innerHTML = '';
+      DILEMMAS.forEach((d, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'food-chip';
+        chip.innerHTML = `<span>#${idx+1}</span> <span>${d.title}</span>`;
+        chip.onclick = () => loadDilemma(idx);
+        container.appendChild(chip);
+      });
+    }
+
+    function loadDilemma(idx) {
+      currentDilemmaIdx = idx;
+      const d = DILEMMAS[idx];
+      document.getElementById('dilemma-title').innerText = d.title;
+      document.getElementById('dilemma-group-tag').innerText = d.groupTag;
+      document.getElementById('dilemma-text').innerText = d.text;
+
+      const choicesBox = document.getElementById('pnc-choices-box');
+      choicesBox.innerHTML = '';
+      const feedbackBox = document.getElementById('pnc-feedback-box');
+      feedbackBox.style.display = 'none';
+
+      d.choices.forEach(ch => {
+        const btn = document.createElement('button');
+        btn.className = 'pnc-choice-btn';
+        btn.innerText = ch.text;
+        btn.onclick = () => selectChoice(ch, btn);
+        choicesBox.appendChild(btn);
+      });
+      sfxDing();
+    }
+
+    function selectChoice(ch, btn) {
+      const feedbackBox = document.getElementById('pnc-feedback-box');
+      feedbackBox.style.display = 'block';
+      feedbackBox.innerText = ch.feedback;
+
+      if (ch.isSafe) {
+        btn.classList.add('correct');
+        feedbackBox.style.background = 'rgba(16, 185, 129, 0.25)';
+        feedbackBox.style.border = '1px solid #10b981';
+        feedbackBox.style.color = '#a7f3d0';
+        launchConfetti();
+      } else {
+        btn.classList.add('unsafe');
+        feedbackBox.style.background = 'rgba(239, 68, 68, 0.25)';
+        feedbackBox.style.border = '1px solid #ef4444';
+        feedbackBox.style.color = '#fecaca';
+        sfxBuzzer();
+      }
+    }
+
+    function setThermo(lvl) {
+      sfxDing();
+      const labels = [
+        "Level 1: Calm pond (Heart steady)",
+        "Level 2: Mild ripple (Slightly annoyed)",
+        "Level 3: Windy waves (Noticeable heat in chest)",
+        "Level 4: Thunderstorm (Heart racing fast)",
+        "Level 5: Volcanic eruption (Loss of impulse control!)"
+      ];
+      alert("🌡️ Feelings Calibrated: " + labels[lvl-1] + "\n\nGolden Rule: We never make permanent choices at Level 5!");
+    }
+
+    /* =====================================================================
+       ZEN BREATHE BUBBLE ENGINE
+    ===================================================================== */
+    let isBreathingActive = false;
+    let breathInterval = null;
+    let breathPhase = 0; // 0=Inhale, 1=Hold, 2=Exhale, 3=Hold
+
+    function toggleBreathing() {
+      const bubble = document.getElementById('zen-bubble');
+      const status = document.getElementById('zen-status');
+      const counter = document.getElementById('zen-counter');
+      const btn = document.getElementById('zen-toggle-btn');
+
+      if (!isBreathingActive) {
+        isBreathingActive = true;
+        btn.innerText = '⏹ Stop Breathing Reset';
+        sfxZenChime();
+        runBreathCycle();
+        breathInterval = setInterval(runBreathCycle, 4000);
+      } else {
+        isBreathingActive = false;
+        clearInterval(breathInterval);
+        bubble.className = 'zen-bubble';
+        bubble.innerText = 'PAUSE';
+        status.innerText = 'Ready to Reset';
+        counter.innerText = 'Hit Start when squad is quiet';
+        btn.innerText = '▶ Start 4-Square Breathing';
+      }
+    }
+
+    function runBreathCycle() {
+      const bubble = document.getElementById('zen-bubble');
+      const status = document.getElementById('zen-status');
+      const counter = document.getElementById('zen-counter');
+
+      const phases = [
+        { text: "INHALE", bubbleClass: "zen-bubble inhale", status: "Breathe in slowly (4s)...", count: "Oxygen fuels your brain" },
+        { text: "HOLD", bubbleClass: "zen-bubble inhale", status: "Hold gently (4s)...", count: "Feel the calm stillness" },
+        { text: "EXHALE", bubbleClass: "zen-bubble exhale", status: "Breathe out smooth (4s)...", count: "Release tension and heat" },
+        { text: "PAUSE", bubbleClass: "zen-bubble", status: "Rest & reset (4s)...", count: "Ready for the next move" }
+      ];
+
+      const current = phases[breathPhase];
+      bubble.className = current.bubbleClass;
+      bubble.innerText = current.text;
+      status.innerText = current.status;
+      counter.innerText = current.count;
+      sfxZenChime();
+
+      breathPhase = (breathPhase + 1) % 4;
+    }
+
+    /* Init */
+    renderActiveCard();
+    renderPantry();
+    renderDilemmaList();
+    loadDilemma(0);
+  </script>
+</body>
+</html>
